@@ -1,39 +1,33 @@
-﻿// массив (задаваемый/пользователем). Премещение курсора пользователем. Заполнение  структура(цветом (enum Console.Color)/символом) . Сохранение, серриализация, дессириализация. 
+﻿// массив (задаваемый/пользователем). Премещение курсора пользователем. Заполнение структура(цветом (enum Console.Color)/символом) . Сохранение, серриализация, дессириализация.
 
 /* 1. Задать массив спросив у пользлвателя кол-во строк и столбцов +
-   2. Генерация стен у пользлвателя +
-   3. Передвижение курсора по полю +
-   4. Выбор и заполнение пикселя цветом и символом
+2. Генерация стен у пользлвателя +
+3. Передвижение курсора по полю +
+4. Выбор и заполнение пикселя цветом и символом
 */
-using System.Security.Cryptography;
+using System;
+using System.Drawing;
 
 namespace PixelArt
 {
     public enum Cell
     {
-        Empty = '*',
-        Bound = '#',
-        PixSkin = '֍'  // 1421	U+058D	D6 8D
-    }
-
-    public enum Color
-    {
-        Red = 1,
-        Blue = 2,
-        Green = 3
+        Empty = '*', // Белый
+        Bound = '#', // Коричневый
+        PixSkin = '֍' // 1421 U+058D D6 8D Navy
     }
 
     public struct Pixel
     {
-        public string symbol;
-        public Color color;
+        public Cell symbol;
+        public ConsoleColor color;
     }
 
     public class Program
     {
-        static Cell[,] CreateField(int yRows, int xCols) // задаём двумерный массив 
+        static Pixel[,] CreateField(int yRows, int xCols) // задаём двумерный массив
         {
-            return new Cell[yRows, xCols];
+            return new Pixel[yRows, xCols];
         }
         static int InitRows() // Спрашиваем сколько строк + возвращаем их
         {
@@ -51,7 +45,7 @@ namespace PixelArt
             return xCols;
         }
 
-        static void InitField(Cell[,] field) // задаём поле, границы поля по X(i) , Y (j)
+        static void InitField(Pixel[,] field) // задаём поле, границы поля по X(i) , Y (j)
         {
             int yRows = field.GetLength(0);
             int xCols = field.GetLength(1);
@@ -89,7 +83,7 @@ namespace PixelArt
         }
 
 
-        static void PrintObjects(Cell[,] field, int xPix, int yPix) // отрисовка поля, пикселя, стен, пустот
+        static void PrintObjects(Pixel[,] field, int xPix, int yPix) // отрисовка поля, пикселя, стен, пустот
         {
 
             int yRows = field.GetLength(0);
@@ -110,150 +104,139 @@ namespace PixelArt
                     }
                     else
                     {
-                        switch (field[i, j])
-                        {
-                            case Cell.Empty:
-                                Console.ForegroundColor = ConsoleColor.Gray;
-                                break;
-                            case Cell.Bound:
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                break;
-                        }
-
-                        Console.Write((char)field[i, j]);
-
+                        Console.ForegroundColor = field[i, j].color;
+                        Console.Write((char)field[i, j].symbol);
                     }
                 }
+                Console.WriteLine();
             }
-            Console.WriteLine();
 
+        }
 
+        static void MovePix(Pixel[,] field, ConsoleKey key, ref int xPix, ref int yPix)// движение пикселя WASD + Space
+        {
+            int yRows = field.GetLength(0);
+            int xCols = field.GetLength(1);
 
-            static void MovePix(Cell[,] field, ref int xPix,ref int yPix) // движение пикселя WASD + Space
+            switch (key)
             {
-                int yRows = field.GetLength(0);
-                int xCols = field.GetLength(1);
+                case System.ConsoleKey.A:
+                    if (yPix > 1)
+                    {
+                        yPix--;
+                    }
+                    break;
 
+                case System.ConsoleKey.W:
+                    if (xPix > 1)
+                    {
+                        xPix--;
+                    }
+                    break;
+
+                case System.ConsoleKey.D:
+                    if (yPix < xCols - 2)
+                    {
+                        yPix++;
+                    }
+                    break;
+
+                case System.ConsoleKey.S:
+                    if (xPix < yRows - 2)
+                    {
+                        xPix++;
+                    }
+                    break;
+                    /*
+                case System.ConsoleKey.Spacebar:
+                    field[xPix, yPix] = Pixel.symbol && Pixel.symbol = Pixel.color;
+                    break;
+
+                case System.ConsoleKey.Backspace:
+                    field[xPix, yPix] = Cell.Empty;
+                    break;
+                    */
+            }
+        }
+
+
+
+        static void PrintMessage()
+        {
+            Console.WriteLine($"Для добавления цвета и символа нажмите *пробел*: ");
+            // Console.Clear();
+        }
+
+        static void PrintMenuColors() // меню выбора цвета
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("1. Красный ");
+
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("2. Синий ");
+
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("3. Зеленый ");
+        }
+        /*
+        static void ColorPixel(ConsoleColor color) // Раскрашивание по выбраному цвету
+        {
+            ConsoleKey key = Console.ReadKey(false).Key;
+            switch (key)
+            {
+                case System.ConsoleKey.1:                       {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                }
+                    break;
+
+                case System.ConsoleKey.2:
+                    { 
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                    }
+                    break;
+
+                case System.ConsoleKey.3:
+{
+                        Console.Write("Введите позицию: ");
+                        int newColor = int.Parse(Console.ReadLine());
+                        color = Color.Green;
+                        Console.ForegroundColor = ConsoleColor.Green;
+                    }
+                    break;
+            }
+
+        }
+        */
+
+        //----------------------------—
+
+        static void Main()
+        {
+
+            int yRows = InitRows();
+            int xCols = InitCols();
+
+            InitField(field);
+
+            int xPix = InitXPix();
+            int yPix = InitYPix();
+
+
+            Pixel[,] field = CreateField(yRows, xCols);
+
+            PrintMenuColors();
+
+            bool play = true;
+
+            while (play)
+            {
+                PrintMenuColors();
+                PrintObjects(field, xPix, yPix);
                 ConsoleKey key = Console.ReadKey(false).Key;
-                switch (key)
-                {
-                    case System.ConsoleKey.A:
-                        if (field[xPix, yPix - 1] == Cell.Empty)
-                        {
-                            yPix--;
-                        }
-                        break;
-
-                    case System.ConsoleKey.W:
-                        if (field[xPix - 1, yPix] == Cell.Empty)
-                        {
-                            xPix--;
-                        }
-                        break;
-
-                    case System.ConsoleKey.D:
-                        if (field[xPix, yPix + 1] == Cell.Empty)
-                        {
-                            yPix++;
-                        }
-                        break;
-
-                    case System.ConsoleKey.S:
-                        if (field[xPix + 1, yPix] == Cell.Empty)
-                        {
-                            xPix++;
-                        }
-                        break;
-
-                        /* case System.ConsoleKey.Space
-                         if (field[xPix, yPix] == Pixel.symbol && Pixel.symbol == Pixel.color)
-                         {
-
-                         }
-                        */
-                }
-
+                MovePix(field, key, ref xPix, ref yPix);
             }
-
-            static void PrintMessage()
-            {
-                Console.WriteLine($"Для добавления цвета и символа нажмите *пробел*: ");
-                Console.Clear();
-            }
-            /*
-            void PrintPixel(field[,])
-            {
-                if (Console.ReadKey(Space))
-                {
-                    field[i, j] == Pixel.symbol && Pixel.symbol == Pixel.color;
-                }
-            }
-            */
-
-            static void ColorPixel(Color color) // Цвет по выбору
-            {
-                ConsoleKey key = Console.ReadKey(false).Key;
-                switch (key)
-                {
-                    case (ConsoleKey)1:
-                        {
-                            Console.Write("Введите позицию: ");
-                            int newColor = int.Parse(Console.ReadLine());
-                            color = Color.Red;
-                            Console.ForegroundColor = ConsoleColor.Red;
-                        }
-                        break;
-
-                    case (ConsoleKey)2:
-                        {
-                            Console.Write("Введите позицию: ");
-                            int newColor = int.Parse(Console.ReadLine());
-                            color = Color.Blue;
-                            Console.ForegroundColor = ConsoleColor.Blue;
-
-                        }
-                        break;
-
-                    case (ConsoleKey)3:
-                        {
-                            Console.Write("Введите позицию: ");
-                            int newColor = int.Parse(Console.ReadLine());
-                            color = Color.Green;
-                            Console.ForegroundColor = ConsoleColor.Green;
-                        }
-                        break;
-                }
-
-            }
-
-
-            //------------------------------
-
-            static void Main()
-            {
-
-                int yRows = InitRows();
-                int xCols = InitCols();
-
-                int xPix = InitXPix();
-                int yPix = InitYPix();
-               
-
-                Cell[,] field = CreateField(yRows, xCols);
-
-                InitField(field);
-
-                bool play = true;
-
-                while (play)
-                {
-                    PrintObjects(field, xPix, yPix);
-                    MovePix(field, ref xPix, ref yPix);
-                }
-            }
-
-
         }
     }
 }
-
